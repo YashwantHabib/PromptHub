@@ -5,11 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Heart } from "lucide-react";
 import Header from "./components/ui/header";
+import Toast from "./components/ui/toast";
 
 export default function App() {
   const [prompts, setPrompts] = useState([]);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState("");
+  const [toast, setToast] = useState(null);
   const [sortBy, setSortBy] = useState("newest");
 
   async function fetchPrompts() {
@@ -28,9 +29,8 @@ export default function App() {
 
   const handleCopy = async (prompt) => {
     navigator.clipboard.writeText(prompt.text);
-    setToast("Copied to clipboard!");
+    setToast({ message: "Copied to clipboard!", type: "success" });
 
-    // Increment copy_count in DB
     const { error } = await supabase
       .from("prompts")
       .update({ copy_count: (prompt.copy_count || 0) + 1 })
@@ -43,20 +43,37 @@ export default function App() {
         )
       );
     }
-
-    setTimeout(() => setToast(""), 2000);
   };
 
-  const handleLike = async (id, currentLikes) => {
+  const handleLike = async (promptId) => {
+    if (!user) {
+      setToast({ message: "Please log in to like prompts!", type: "error" });
+      return;
+    }
+
+    const { data: existingLike } = await supabase
+      .from("likes")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("prompt_id", promptId)
+      .single();
+
+    if (existingLike) {
+      setToast({ message: "You already liked this prompt!", type: "error" });
+      return;
+    }
+
     const { error } = await supabase
-      .from("prompts")
-      .update({ likes: currentLikes + 1 })
-      .eq("id", id);
+      .from("likes")
+      .insert([{ user_id: user.id, prompt_id: promptId }]);
 
     if (!error) {
       setPrompts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
+        prev.map((p) =>
+          p.id === promptId ? { ...p, likes: (p.likes || 0) + 1 } : p
+        )
       );
+      setToast({ message: "❤️", type: "success" });
     }
   };
 
@@ -73,9 +90,30 @@ export default function App() {
       p.text.toLowerCase().includes(search.toLowerCase())
   );
 
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.subscription.unsubscribe();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 to-yellow-200">
-      <Header search={search} setSearch={setSearch} />
+    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-purple-600">
+      <Header
+        search={search}
+        setSearch={setSearch}
+        user={user}
+        setUser={setUser}
+      />
 
       {/* SORT OPTIONS */}
       <div className="max-w-7xl mx-auto px-6 flex flex-wrap gap-3 mt-4">
@@ -145,11 +183,12 @@ export default function App() {
         </div>
       </main>
 
-      {/* TOAST */}
       {toast && (
-        <div className="fixed bottom-5 right-5 bg-black text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
-          {toast}
-        </div>
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
