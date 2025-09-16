@@ -64,10 +64,6 @@ export default function App() {
   const sortedPrompts = [...prompts].sort((a, b) => {
     if (sortBy === "likes") return b.likes - a.likes;
     if (sortBy === "copies") return (b.copy_count || 0) - (a.copy_count || 0);
-    if (sortBy === "oldest")
-      return (
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // newest
   });
 
@@ -85,7 +81,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto px-6 flex flex-wrap gap-3 mt-4">
         {[
           { key: "newest", label: "Newest" },
-          { key: "oldest", label: "Oldest" },
           { key: "likes", label: "Most Liked" },
           { key: "copies", label: "Most Copied" },
         ].map((option) => (
@@ -132,7 +127,7 @@ export default function App() {
                     onClick={() => handleCopy(prompt)}
                     className="flex items-center gap-2 bg-pink-400 border-black hover:shadow-[4px_4px_0px_black]"
                   >
-                    <Copy className="w-4 h-4" /> Copy ({prompt.copy_count || 0})
+                    <Copy className="w-4 h-4" /> Copy
                   </Button>
                   <Button
                     size="sm"
