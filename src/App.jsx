@@ -71,36 +71,55 @@ export default function App() {
     }
 
     const alreadyLiked = likedPrompts.includes(promptId);
+    const prompt = prompts.find((p) => p.id === promptId);
+
+    if (!prompt) return;
 
     if (alreadyLiked) {
       // UNLIKE
-      const { error } = await supabase
+      const { error: deleteLikeError } = await supabase
         .from("likes")
         .delete()
         .eq("user_id", user.id)
         .eq("prompt_id", promptId);
 
-      if (!error) {
-        setLikedPrompts((prev) => prev.filter((id) => id !== promptId));
-        setPrompts((prev) =>
-          prev.map((p) =>
-            p.id === promptId ? { ...p, likes: (p.likes || 0) - 1 } : p
-          )
-        );
+      if (!deleteLikeError) {
+        // Decrement likes using previous count
+        const { error: updateError } = await supabase
+          .from("prompts")
+          .update({ likes: (prompt.likes || 1) - 1 })
+          .eq("id", promptId);
+
+        if (!updateError) {
+          setLikedPrompts((prev) => prev.filter((id) => id !== promptId));
+          setPrompts((prev) =>
+            prev.map((p) =>
+              p.id === promptId ? { ...p, likes: (p.likes || 1) - 1 } : p
+            )
+          );
+        }
       }
     } else {
       // LIKE
-      const { error } = await supabase
+      const { error: insertLikeError } = await supabase
         .from("likes")
         .insert([{ user_id: user.id, prompt_id: promptId }]);
 
-      if (!error) {
-        setLikedPrompts((prev) => [...prev, promptId]);
-        setPrompts((prev) =>
-          prev.map((p) =>
-            p.id === promptId ? { ...p, likes: (p.likes || 0) + 1 } : p
-          )
-        );
+      if (!insertLikeError) {
+        // Increment likes using previous count
+        const { error: updateError } = await supabase
+          .from("prompts")
+          .update({ likes: (prompt.likes || 0) + 1 })
+          .eq("id", promptId);
+
+        if (!updateError) {
+          setLikedPrompts((prev) => [...prev, promptId]);
+          setPrompts((prev) =>
+            prev.map((p) =>
+              p.id === promptId ? { ...p, likes: (p.likes || 0) + 1 } : p
+            )
+          );
+        }
       }
     }
   };
