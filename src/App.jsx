@@ -13,7 +13,7 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(12);
   const [toast, setToast] = useState(null);
 
   const { user, setUser } = useAuth();
