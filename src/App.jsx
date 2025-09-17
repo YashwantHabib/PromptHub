@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Heart } from "lucide-react";
 import Header from "./components/ui/header";
 import Toast from "./components/ui/toast";
+import PromptImage from "./components/ui/PromptImage";
 
 export default function App() {
   const [prompts, setPrompts] = useState([]);
@@ -107,7 +108,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-purple-600">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-purple-200">
       <Header
         search={search}
         setSearch={setSearch}
@@ -144,13 +145,8 @@ export default function App() {
               key={prompt.id}
               className="rounded-lg border-2 p-0 border-black overflow-hidden bg-white hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1 group"
             >
-              <div className="relative">
-                <img
-                  src={prompt.image_url}
-                  alt={prompt.title}
-                  className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300 border-b border-black"
-                />
-              </div>
+              <PromptImage src={prompt.image_url} alt={prompt.title} />
+
               <CardContent className="pb-4">
                 <h2 className="font-semibold text-lg text-gray-900">
                   {prompt.title}

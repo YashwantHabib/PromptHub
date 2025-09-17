@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import { supabase } from "../../lib/supabaseClient"; // 👈 import supabase
+import { supabase } from "../../lib/supabaseClient";
 
 export default function Header({ search, setSearch, user, setUser }) {
   const initial = user?.user_metadata?.name
@@ -12,7 +12,7 @@ export default function Header({ search, setSearch, user, setUser }) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null); // 👈 user state clear
+    setUser(null);
   };
 
   return (
@@ -40,7 +40,7 @@ export default function Header({ search, setSearch, user, setUser }) {
           ) : (
             <Button
               variant="outline"
-              onClick={handleLogout} // 👈 click karte hi logout
+              onClick={handleLogout}
               className="md:hidden flex items-center justify-center w-10 h-10 rounded-full border-black font-bold hover:shadow-[4px_4px_0px_black] transition duration-200"
             >
               {initial}

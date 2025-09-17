@@ -12,6 +12,8 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const showToast = (message, type) => {
@@ -21,49 +23,45 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    if (isSignUp) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          },
-        },
-      });
+    try {
+      if (isSignUp) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
+        });
 
-      if (error) {
-        showToast(error.message, "error");
-      } else {
-        const userId = data.user?.id;
-        if (userId) {
-          await supabase.from("users").insert([
-            {
-              id: userId,
-              name: name,
-            },
-          ]);
+        if (error) {
+          showToast(error.message, "error");
+        } else {
+          const userId = data.user?.id;
+          if (userId) {
+            await supabase.from("users").insert([{ id: userId, name }]);
+          }
+          showToast("Check your email to confirm your account 📩", "success");
         }
-        showToast("Check your email to confirm your account 📩", "success");
-      }
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        showToast("Invalid credentials ❌", "error");
       } else {
-        showToast("Logged in successfully 🎉", "success");
-        navigate("/");
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          showToast("Invalid credentials ❌", "error");
+        } else {
+          showToast("Logged in successfully 🎉", "success");
+          navigate("/");
+        }
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-purple-500 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 to-purple-200 px-4">
       {toast && (
         <Toast
           message={toast.message}
@@ -86,7 +84,7 @@ export default function Login() {
             placeholder="Your Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black "
+            className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black"
             required
           />
         )}
@@ -96,7 +94,7 @@ export default function Login() {
           placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black "
+          className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black"
           required
         />
 
@@ -105,15 +103,16 @@ export default function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black "
+          className="border-2 border-black text-black placeholder-gray-700 bg-white focus:outline-none focus-visible:ring-0 focus:border-black"
           required
         />
 
         <Button
           type="submit"
-          className="border-2 border-black bg-pink-400 hover:shadow-[4px_4px_0px_black]"
+          disabled={isLoading}
+          className="border-2 border-black bg-pink-400 hover:shadow-[4px_4px_0px_black] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSignUp ? "Sign Up" : "Log In"}
+          {isLoading ? "Processing..." : isSignUp ? "Sign Up" : "Log In"}
         </Button>
 
         <p
