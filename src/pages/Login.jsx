@@ -21,6 +21,16 @@ export default function Login() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  function DotsLoader() {
+    return (
+      <div className="flex items-center justify-center gap-1">
+        <span className="w-2 h-2 bg-black rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+        <span className="w-2 h-2 bg-black rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+        <span className="w-2 h-2 bg-black rounded-full animate-bounce"></span>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -35,10 +45,15 @@ export default function Login() {
 
         if (error) {
           showToast(error.message, "error");
+        } else if (data?.user && data.user.identities?.length === 0) {
+          showToast("Account already exists with this email ❌", "error");
         } else {
           const userId = data.user?.id;
           if (userId) {
-            await supabase.from("users").insert([{ id: userId, name }]);
+            await supabase
+              .from("users")
+              .insert([{ id: userId, name }])
+              .catch(() => {});
           }
           showToast("Check your email to confirm your account 📩", "success");
         }
@@ -112,7 +127,7 @@ export default function Login() {
           disabled={isLoading}
           className="border-2 border-black bg-pink-400 hover:shadow-[4px_4px_0px_black] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? "Processing..." : isSignUp ? "Sign Up" : "Log In"}
+          {isLoading ? <DotsLoader /> : isSignUp ? "Sign Up" : "Log In"}
         </Button>
 
         <p

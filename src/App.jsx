@@ -13,6 +13,24 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const [sortBy, setSortBy] = useState("newest");
+  const [user, setUser] = useState(null);
+  const [likedPrompts, setLikedPrompts] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from("likes")
+        .select("prompt_id")
+        .eq("user_id", user.id)
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setLikedPrompts(data.map((row) => row.prompt_id));
+          }
+        });
+    } else {
+      setLikedPrompts([]);
+    }
+  }, [user]);
 
   async function fetchPrompts() {
     const { data, error } = await supabase
@@ -52,29 +70,38 @@ export default function App() {
       return;
     }
 
-    const { data: existingLike } = await supabase
-      .from("likes")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("prompt_id", promptId)
-      .single();
+    const alreadyLiked = likedPrompts.includes(promptId);
 
-    if (existingLike) {
-      setToast({ message: "You already liked this prompt!", type: "error" });
-      return;
-    }
+    if (alreadyLiked) {
+      // UNLIKE
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("prompt_id", promptId);
 
-    const { error } = await supabase
-      .from("likes")
-      .insert([{ user_id: user.id, prompt_id: promptId }]);
+      if (!error) {
+        setLikedPrompts((prev) => prev.filter((id) => id !== promptId));
+        setPrompts((prev) =>
+          prev.map((p) =>
+            p.id === promptId ? { ...p, likes: (p.likes || 0) - 1 } : p
+          )
+        );
+      }
+    } else {
+      // LIKE
+      const { error } = await supabase
+        .from("likes")
+        .insert([{ user_id: user.id, prompt_id: promptId }]);
 
-    if (!error) {
-      setPrompts((prev) =>
-        prev.map((p) =>
-          p.id === promptId ? { ...p, likes: (p.likes || 0) + 1 } : p
-        )
-      );
-      setToast({ message: "❤️", type: "success" });
+      if (!error) {
+        setLikedPrompts((prev) => [...prev, promptId]);
+        setPrompts((prev) =>
+          prev.map((p) =>
+            p.id === promptId ? { ...p, likes: (p.likes || 0) + 1 } : p
+          )
+        );
+      }
     }
   };
 
@@ -82,6 +109,12 @@ export default function App() {
   const sortedPrompts = [...prompts].sort((a, b) => {
     if (sortBy === "likes") return b.likes - a.likes;
     if (sortBy === "copies") return (b.copy_count || 0) - (a.copy_count || 0);
+    if (sortBy === "likedFirst") {
+      return (
+        (likedPrompts.includes(b.id) ? 1 : 0) -
+        (likedPrompts.includes(a.id) ? 1 : 0)
+      );
+    }
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // newest
   });
 
@@ -90,8 +123,6 @@ export default function App() {
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.text.toLowerCase().includes(search.toLowerCase())
   );
-
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -117,24 +148,27 @@ export default function App() {
       />
 
       {/* SORT OPTIONS */}
-      <div className="max-w-7xl mx-auto px-6 flex flex-wrap gap-3 mt-4">
-        {[
-          { key: "newest", label: "Newest" },
-          { key: "likes", label: "Most Liked" },
-          { key: "copies", label: "Most Copied" },
-        ].map((option) => (
-          <button
-            key={option.key}
-            className={`px-4 py-1 rounded-full font-medium text-sm transition-all duration-200 ${
-              sortBy === option.key
-                ? "bg-black text-white shadow-lg "
-                : "bg-white text-black border border-black hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1"
-            }`}
-            onClick={() => setSortBy(option.key)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="max-w-7xl mx-auto px-6 py-2 mt-4 overflow-x-auto">
+        <div className="flex gap-3 flex-nowrap">
+          {[
+            { key: "newest", label: "Newest" },
+            { key: "likes", label: "Most Liked" },
+            { key: "copies", label: "Most Copied" },
+            { key: "likedFirst", label: "My Likes" },
+          ].map((option) => (
+            <button
+              key={option.key}
+              className={`px-4 py-1 rounded-full font-medium text-sm transition-all duration-200 whitespace-nowrap ${
+                sortBy === option.key
+                  ? "bg-black text-white shadow-lg "
+                  : "bg-white text-black border border-black hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1"
+              }`}
+              onClick={() => setSortBy(option.key)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* CONTENT */}
@@ -166,11 +200,15 @@ export default function App() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleLike(prompt.id, prompt.likes)}
+                    onClick={() => handleLike(prompt.id)}
                     className="flex items-center gap-1 transition transform active:scale-125"
                   >
-                    <Heart className="w-4 h-4 text-green-500" />
-                    {prompt.likes}
+                    <Heart
+                      className="w-4 h-4"
+                      fill={likedPrompts.includes(prompt.id) ? "red" : "none"}
+                      color={likedPrompts.includes(prompt.id) ? "red" : "green"}
+                    />
+                    {prompt.likes || 0}
                   </Button>
                 </div>
               </CardContent>

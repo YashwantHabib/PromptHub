@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Send } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function Header({ search, setSearch, user, setUser }) {
@@ -28,24 +28,35 @@ export default function Header({ search, setSearch, user, setUser }) {
           </h1>
 
           {/* Mobile Right Side */}
-          {!user ? (
-            <a href="/login">
+          <div className="flex items-center gap-2 md:hidden">
+            <a href="">
               <Button
                 variant="outline"
-                className="border-black text-black md:hidden hover:shadow-[4px_4px_0px_black] transition duration-200"
+                className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[4px_4px_0px_black] transition duration-200"
               >
-                Log in
+                <Send className="w-4 h-4" />
               </Button>
             </a>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-full border-black font-bold hover:shadow-[4px_4px_0px_black] transition duration-200"
-            >
-              {initial}
-            </Button>
-          )}
+
+            {!user ? (
+              <a href="/login">
+                <Button
+                  variant="outline"
+                  className="border-black text-black hover:shadow-[4px_4px_0px_black] transition duration-200"
+                >
+                  Log in
+                </Button>
+              </a>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="flex items-center justify-center w-10 h-10 rounded-full border-black font-bold hover:shadow-[4px_4px_0px_black] transition duration-200"
+              >
+                {initial}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -64,6 +75,15 @@ export default function Header({ search, setSearch, user, setUser }) {
 
         {/* Desktop Right Side */}
         <div className="hidden md:flex items-center gap-2">
+          <a href="">
+            <Button
+              variant="outline"
+              className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </a>
+
           {!user ? (
             <a href="/login">
               <Button
