@@ -30,14 +30,54 @@ export default function App() {
     setToast
   );
 
+  const handleReport = async (prompt) => {
+    const newCount = (prompt.report_count || 0) + 1;
+
+    if (newCount >= 10) {
+      // Auto delete prompt
+      const { error } = await supabase
+        .from("prompts")
+        .delete()
+        .eq("id", prompt.id);
+      if (!error) {
+        setPrompts((prev) => prev.filter((p) => p.id !== prompt.id));
+        setToast({
+          message: "Prompt deleted due to multiple reports!",
+          type: "error",
+        });
+      }
+    } else {
+      // Just increment report_count
+      const { error } = await supabase
+        .from("prompts")
+        .update({ report_count: newCount })
+        .eq("id", prompt.id);
+
+      if (!error) {
+        setPrompts((prev) =>
+          prev.map((p) =>
+            p.id === prompt.id ? { ...p, report_count: newCount } : p
+          )
+        );
+        setToast({ message: "Reported successfully!", type: "success" });
+      }
+    }
+  };
+
   const handleCopy = async (prompt) => {
     navigator.clipboard.writeText(prompt.text);
     setToast({ message: "Copied to clipboard!", type: "success" });
 
-    await supabase
+    const { error } = await supabase
       .from("prompts")
       .update({ copy_count: (prompt.copy_count || 0) + 1 })
-      .eq("id", prompt.id);
+      .eq("id", prompt.id)
+      .select();
+
+    if (error) {
+      console.error("Copy count update error:", error);
+      setToast({ message: "Failed to update copy count", type: "error" });
+    }
 
     setPrompts((prev) =>
       prev.map((p) =>
@@ -66,6 +106,7 @@ export default function App() {
               likedPrompts={likedPrompts}
               handleCopy={handleCopy}
               handleLike={toggleLike}
+              handleReport={handleReport}
             />
           ))}
         </div>

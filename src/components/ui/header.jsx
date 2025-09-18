@@ -60,7 +60,7 @@ export default function Header({ search, setSearch, user, setUser, setToast }) {
             ) : (
               <Button
                 variant="outline"
-                onClick={handleLogout}
+                onClick={() => navigate("/profile")}
                 className="flex items-center justify-center w-10 h-10 rounded-full border-black font-bold hover:shadow-[4px_4px_0px_black] transition duration-200"
               >
                 {initial}
@@ -105,7 +105,7 @@ export default function Header({ search, setSearch, user, setUser, setToast }) {
           ) : (
             <Button
               variant="outline"
-              onClick={handleLogout}
+              onClick={() => navigate("/profile")}
               className="flex items-center justify-center w-10 h-10 rounded-full border-black font-bold hover:shadow-[4px_4px_0px_black] transition duration-200"
             >
               {initial}
