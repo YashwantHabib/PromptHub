@@ -23,7 +23,12 @@ export default function App() {
     limit,
     sortBy
   );
-  const { likedPrompts, toggleLike } = useLikes(user, prompts, setPrompts);
+  const { likedPrompts, toggleLike } = useLikes(
+    user,
+    prompts,
+    setPrompts,
+    setToast
+  );
 
   const handleCopy = async (prompt) => {
     navigator.clipboard.writeText(prompt.text);

@@ -15,8 +15,23 @@ export default function PromptCard({
 
       <CardContent className="pb-4">
         <h2 className="font-semibold text-lg text-gray-900">{prompt.title}</h2>
-        <p className="text-sm text-gray-700 mt-1">
-          by <span className="font-medium">@{prompt.username}</span>
+        <p className="text-sm text-gray-700 mt-1 flex items-center gap-1">
+          by{" "}
+          {prompt.is_owner ? (
+            <>
+              <span className="font-bold text-black">Promptify</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="url(#blueGradient)"
+              >
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            </>
+          ) : (
+            <span className="font-medium">@{prompt.username}</span>
+          )}
         </p>
 
         <div className="flex items-center justify-between mt-5 border-t border-black pt-4">

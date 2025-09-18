@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-export function useLikes(user, prompts, setPrompts) {
+export function useLikes(user, prompts, setPrompts, setToast) {
   const [likedPrompts, setLikedPrompts] = useState([]);
 
   // fetch liked prompts
@@ -21,6 +21,10 @@ export function useLikes(user, prompts, setPrompts) {
 
   // toggle like
   const toggleLike = async (promptId) => {
+    if (!user) {
+      setToast({ message: "Log in to like", type: "error" });
+      return;
+    }
     const alreadyLiked = likedPrompts.includes(promptId);
     const prompt = prompts.find((p) => p.id === promptId);
     if (!prompt) return;
