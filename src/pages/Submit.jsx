@@ -94,6 +94,7 @@ export default function Submit() {
       setTitle("");
       setText("");
       setImage(null);
+      navigate(-1);
     } catch (error) {
       console.error(error.message);
       setToast({

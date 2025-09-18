@@ -33,34 +33,46 @@ export default function App() {
   const handleReport = async (prompt) => {
     const newCount = (prompt.report_count || 0) + 1;
 
-    if (newCount >= 10) {
-      // Auto delete prompt
-      const { error } = await supabase
-        .from("prompts")
-        .delete()
-        .eq("id", prompt.id);
-      if (!error) {
+    try {
+      if (newCount >= 10) {
+        // Auto delete using RPC (bypasses RLS)
+        const { error: rpcError } = await supabase.rpc(
+          "delete_reported_prompt",
+          {
+            p_prompt_id: prompt.id,
+          }
+        );
+
+        if (rpcError) throw rpcError;
+
         setPrompts((prev) => prev.filter((p) => p.id !== prompt.id));
         setToast({
           message: "Prompt deleted due to multiple reports!",
           type: "error",
         });
-      }
-    } else {
-      // Just increment report_count
-      const { error } = await supabase
-        .from("prompts")
-        .update({ report_count: newCount })
-        .eq("id", prompt.id);
+      } else {
+        // Just increment report_count
+        const { error: updateError } = await supabase
+          .from("prompts")
+          .update({ report_count: newCount })
+          .eq("id", prompt.id);
 
-      if (!error) {
+        if (updateError) throw updateError;
+
         setPrompts((prev) =>
           prev.map((p) =>
             p.id === prompt.id ? { ...p, report_count: newCount } : p
           )
         );
+
         setToast({ message: "Reported successfully!", type: "success" });
       }
+    } catch (error) {
+      console.error("Report error:", error.message);
+      setToast({
+        message: "Error reporting prompt: " + error.message,
+        type: "error",
+      });
     }
   };
 
