@@ -13,14 +13,12 @@ export default function Submit() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get current session user
     const getUser = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
     };
-
     getUser();
   }, []);
 
@@ -45,7 +43,6 @@ export default function Submit() {
     try {
       let imageUrl = null;
 
-      // ✅ Upload image if provided
       if (image) {
         const fileExt = image.name.split(".").pop();
         const filePath = `${user.id}/${Date.now()}.${fileExt}`;
@@ -67,14 +64,13 @@ export default function Submit() {
         imageUrl = data.publicUrl;
       }
 
-      // ✅ Insert into prompts table
       const { error: insertError } = await supabase.from("prompts").insert([
         {
           title,
           text,
           image_url: imageUrl,
           user_id: user.id,
-          username: user.user_metadata?.name || user.email, // 👈 tumne bola username nahi, sirf name hai
+          username: user.user_metadata?.name || user.email,
         },
       ]);
 
@@ -82,7 +78,6 @@ export default function Submit() {
 
       setToast({ message: "Prompt submitted successfully!", type: "success" });
 
-      // Reset form
       setTitle("");
       setText("");
       setImage(null);
@@ -98,23 +93,34 @@ export default function Submit() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">Submit a Prompt</h1>
+    <div className="max-w-2xl mx-auto p-6">
+      {/* back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 px-3 py-1 border-2 border-black bg-white hover:bg-pink-200 rounded-md shadow-[4px_4px_0px_black] transition"
+      >
+        ← Back
+      </button>
 
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+      <h1 className="text-3xl font-bold mb-6 text-gray-900">Submit a Prompt</h1>
+
+      <form
+        className="flex flex-col gap-4 bg-white border-2 border-black rounded-xl p-6 shadow-[6px_6px_0px_black]"
+        onSubmit={handleSubmit}
+      >
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="border border-black p-2"
+          className="border-2 border-black p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
         />
 
         <textarea
           placeholder="Write your prompt..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="border border-black p-2"
+          className="border-2 border-black p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400"
           rows={5}
         />
 
@@ -122,13 +128,25 @@ export default function Submit() {
           type="file"
           accept="image/*"
           onChange={(e) => setImage(e.target.files?.[0] || null)}
-          className="border border-black p-2"
+          className="border-2 border-black p-2 rounded-md"
         />
+
+        {/* image preview */}
+        {image && (
+          <div className="mt-2">
+            <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+            <img
+              src={URL.createObjectURL(image)}
+              alt="preview"
+              className="w-full max-h-64 object-cover border-2 border-black rounded-lg shadow-[4px_4px_0px_black]"
+            />
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-black text-white rounded shadow hover:shadow-[4px_4px_0px_black] transition disabled:opacity-50"
+          className="px-4 py-2 bg-pink-400 border-2 border-black rounded-md font-semibold shadow-[4px_4px_0px_black] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition disabled:opacity-50"
         >
           {loading ? "Submitting..." : "Submit"}
         </button>
