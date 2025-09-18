@@ -48,6 +48,7 @@ export default function App() {
         setSearch={setSearch}
         user={user}
         setUser={setUser}
+        setToast={setToast}
       />
       <SortOptions sortBy={sortBy} setSortBy={setSortBy} />
 

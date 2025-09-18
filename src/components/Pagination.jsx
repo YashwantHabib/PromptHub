@@ -21,7 +21,7 @@ export default function Pagination({ page, setPage, total, limit }) {
           onClick={() => setPage(pg)}
           className={`w-10 h-10 border-2 border-black rounded-md shadow-[3px_3px_0px_black] font-bold transition-all duration-200 ${
             page === pg
-              ? "bg-black text-white"
+              ? "bg-purple-400 text-white"
               : "bg-white hover:bg-yellow-200 hover:-translate-y-1 active:translate-y-0 active:shadow-none"
           }`}
         >

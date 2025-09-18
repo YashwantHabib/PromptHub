@@ -2,8 +2,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Send } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
-export default function Header({ search, setSearch, user, setUser }) {
+export default function Header({ search, setSearch, user, setUser, setToast }) {
+  const navigate = useNavigate();
+
   const initial = user?.user_metadata?.name
     ? user.user_metadata.name.charAt(0).toUpperCase()
     : user?.email
@@ -13,6 +16,14 @@ export default function Header({ search, setSearch, user, setUser }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+  };
+
+  const handleSend = () => {
+    if (!user) {
+      setToast({ message: "Login to Post your prompts", type: "error" });
+      return;
+    }
+    navigate("/submit");
   };
 
   return (
@@ -29,14 +40,13 @@ export default function Header({ search, setSearch, user, setUser }) {
 
           {/* Mobile Right Side */}
           <div className="flex items-center gap-2 md:hidden">
-            <a href="">
-              <Button
-                variant="outline"
-                className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[4px_4px_0px_black] transition duration-200"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </a>
+            <Button
+              variant="outline"
+              onClick={handleSend}
+              className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[4px_4px_0px_black] transition duration-200"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
 
             {!user ? (
               <a href="/login">
@@ -75,14 +85,13 @@ export default function Header({ search, setSearch, user, setUser }) {
 
         {/* Desktop Right Side */}
         <div className="hidden md:flex items-center gap-2">
-          <a href="">
-            <Button
-              variant="outline"
-              className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </a>
+          <Button
+            variant="outline"
+            onClick={handleSend}
+            className="flex items-center gap-1 w-10 h-10 rounded-full border-black text-black hover:shadow-[6px_6px_0px_black] transition duration-300 hover:-translate-y-1"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
 
           {!user ? (
             <a href="/login">

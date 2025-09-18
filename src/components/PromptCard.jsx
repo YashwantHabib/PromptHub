@@ -15,7 +15,9 @@ export default function PromptCard({
 
       <CardContent className="pb-4">
         <h2 className="font-semibold text-lg text-gray-900">{prompt.title}</h2>
-        <p className="text-sm text-gray-700 mt-2 line-clamp-3">{prompt.text}</p>
+        <p className="text-sm text-gray-700 mt-1">
+          by <span className="font-medium">@{prompt.username}</span>
+        </p>
 
         <div className="flex items-center justify-between mt-5 border-t border-black pt-4">
           <Button

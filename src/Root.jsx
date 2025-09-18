@@ -1,7 +1,7 @@
-// Root.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App";
 import Login from "./pages/Login";
+import Submit from "./pages/Submit";
 
 export default function Root() {
   return (
@@ -9,6 +9,7 @@ export default function Root() {
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/submit" element={<Submit />} />
       </Routes>
     </BrowserRouter>
   );
