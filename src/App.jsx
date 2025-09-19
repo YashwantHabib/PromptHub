@@ -31,6 +31,10 @@ export default function App() {
   );
 
   const handleReport = async (prompt) => {
+    if (prompt.is_owner) {
+      setToast({ message: "You cannot report this prompt!", type: "error" });
+      return;
+    }
     const newCount = (prompt.report_count || 0) + 1;
 
     try {

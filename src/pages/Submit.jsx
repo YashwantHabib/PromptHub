@@ -109,13 +109,14 @@ export default function Submit() {
   return (
     <div className="min-h-screen flex flex-col items-center p-4 md:p-10 bg-gradient-to-br from-purple-50 to-purple-200">
       <div className="w-full max-w-3xl flex flex-col gap-6">
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="self-start px-4 py-2 border-2 border-black bg-white hover:bg-pink-200 rounded-md shadow-[4px_4px_0px_black] transition"
-        >
-          ← Back
-        </button>
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 border-2 border-black bg-white  rounded-xl hover:shadow-[4px_4px_0px_black]"
+          >
+            ← Back
+          </button>
+        </div>
 
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 text-center md:text-left">
           Submit a Prompt

@@ -4,11 +4,14 @@ import { supabase } from "../lib/supabaseClient";
 import Toast from "../components/ui/toast";
 import PromptCard from "../components/PromptCard";
 import { Button } from "@/components/ui/button";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [prompts, setPrompts] = useState([]);
   const [toast, setToast] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,13 +95,12 @@ export default function Profile() {
     <div className="min-h-screen bg-gradient-to-br from-purple-200 to-purple-400 p-6">
       {/* Top bar */}
       <div className="flex items-center mb-8">
-        <Button
-          variant="outline"
+        <button
           onClick={() => navigate(-1)}
-          className="border-black hover:shadow-[4px_4px_0px_black]"
+          className="px-4 py-2 border-2 border-black bg-white  rounded-xl hover:shadow-[4px_4px_0px_black]"
         >
           ← Back
-        </Button>
+        </button>
       </div>
 
       {/* User Info */}
@@ -117,10 +119,9 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Logout Button niche shift kiya */}
         <Button
           variant="destructive"
-          onClick={handleLogout}
+          onClick={() => setConfirmLogout(true)}
           className="mt-4 border-black hover:shadow-[4px_4px_0px_black]"
         >
           Logout
@@ -140,7 +141,9 @@ export default function Profile() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleDelete(prompt.id, prompt.image_url)}
+              onClick={() =>
+                setConfirmDelete({ id: prompt.id, imageUrl: prompt.image_url })
+              }
               className="absolute top-2 right-2 border-black hover:shadow-[3px_3px_0px_black]"
             >
               Delete
@@ -148,6 +151,30 @@ export default function Profile() {
           </div>
         ))}
       </div>
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Are you sure?"
+        message="This will permanently delete your prompt."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          handleDelete(confirmDelete.id, confirmDelete.imageUrl);
+          setConfirmDelete(null);
+        }}
+        onCancel={() => setConfirmDelete(null)}
+      />
+      <ConfirmDialog
+        open={!!confirmLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        onConfirm={() => {
+          handleLogout();
+          setConfirmLogout(null);
+        }}
+        onCancel={() => setConfirmLogout(null)}
+      />
 
       {toast && (
         <Toast
