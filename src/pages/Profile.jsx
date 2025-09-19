@@ -5,6 +5,7 @@ import Toast from "../components/ui/toast";
 import PromptCard from "../components/PromptCard";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { Trash2 } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -57,10 +58,12 @@ export default function Profile() {
 
     // Step 2: Image delete from storage
     if (imageUrl) {
+      console.log("Deleting image from storage:", imageUrl);
       try {
-        // Extract path after bucket
-        const path = imageUrl.split("/prompt-images/")[1];
-        // path will be like: userId/filename.jpg
+        // Extract path after "/prompt-images/"
+        const parts = imageUrl.split("/prompt-images/");
+        const path = parts[1]; // should be "userId/filename.jpg"
+        console.log("Extracted path:", path);
 
         if (path) {
           const { error: storageError } = await supabase.storage
@@ -73,7 +76,7 @@ export default function Profile() {
             console.log("Image deleted:", path);
           }
         } else {
-          console.warn("Invalid path, skipping delete:", path);
+          console.warn("Could not extract path from URL:", imageUrl);
         }
       } catch (err) {
         console.error("Error parsing image url:", err);
@@ -144,9 +147,9 @@ export default function Profile() {
               onClick={() =>
                 setConfirmDelete({ id: prompt.id, imageUrl: prompt.image_url })
               }
-              className="absolute top-2 right-2 border-black hover:shadow-[3px_3px_0px_black]"
+              className="absolute top-2 right-2 border-black hover:shadow-[3px_3px_0px_black] p-2"
             >
-              Delete
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         ))}

@@ -2,7 +2,7 @@ export default function SortOptions({ sortBy, setSortBy }) {
   const options = [
     { key: "newest", label: "Newest" },
     { key: "likes", label: "Most Liked" },
-    { key: "copies", label: "Most Copied" },
+    { key: "copies", label: "Trending" },
   ];
 
   return (

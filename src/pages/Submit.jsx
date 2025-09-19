@@ -146,7 +146,7 @@ export default function Submit() {
             type="file"
             accept="image/*"
             onChange={(e) => setImage(e.target.files?.[0] || null)}
-            className="border-2 border-black p-2 rounded-md file:bg-pink-400 file:text-white file:border-none file:rounded-md file:px-3 file:py-1 file:cursor-pointer"
+            className="border-2 border-black p-2 rounded-md file:bg-yellow-300 file:text-black file:border-black file:rounded-md file:px-3 file:py-1 file:cursor-pointer"
           />
 
           {/* Image preview */}
