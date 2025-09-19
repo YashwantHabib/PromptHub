@@ -50,10 +50,13 @@ export default function Login() {
         } else {
           const userId = data.user?.id;
           if (userId) {
-            await supabase
+            const { error: insertError } = await supabase
               .from("users")
-              .insert([{ id: userId, name }])
-              .catch(() => {});
+              .insert([{ id: userId, name }]);
+
+            if (insertError) {
+              console.error("Error inserting user:", insertError.message);
+            }
           }
           showToast("Check your email to confirm your account 📩", "success");
         }
